@@ -37,6 +37,21 @@ def call() {
 
         }
 
+        stage('Release Application') {
+            when {
+                expression {
+                    env.TAG_NAME ==~ ".*"
+                }
+            }
+            steps {
+                sh 'echo $TAG_NAME >VERSION'
+                sh 'zip -r frontend-${TAG_NAME}.zip *'
+                // Deleting this file as it is not needed.
+                sh 'zip -d frontend-${TAG_NAME}.zip Jenkinsfile'
+                sh 'curl -f -v -u ${NEXUS_USR}:${NEXUS_PSW} --upload-file frontend-${TAG_NAME}.zip http://172.31.14.209:8081/repository/frontend/frontend-${TAG_NAME}.zip'
+            }
+        }
+
         post {
             always {
                 cleanWs()
