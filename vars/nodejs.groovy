@@ -7,6 +7,9 @@ def call() {
             }
         }
 
+        environment {
+            NEXUS = credentials('NEXUS')
+        }
 
         stages {
             stage('Code Quality') {
@@ -42,7 +45,10 @@ def call() {
                 }
                 steps {
 
-                    sh 'echo Release Application'
+                    sh 'npm install'
+                    sh 'echo $TAG_NAME >VERSION'
+                    sh 'zip -r catalogue-${TAG_NAME}.zip node_modules server.js VERSION '
+                    sh 'curl -f -v -u ${NEXUS_USR}:${NEXUS_PSW} --upload-file catalogue-${TAG_NAME}.zip http://172.31.14.209:8081/repository/catalogue/catalogue-${TAG_NAME}.zip'
                 }
             }
 
